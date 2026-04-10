@@ -14,12 +14,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // CORS — allow frontend origin
+        // CORS + cookie-to-bearer token injection for HTTP-only auth cookies
         $middleware->api(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,
+            \App\Http\Middleware\InjectTokenFromCookie::class,
         ]);
 
-        // Register alias
+        // Register aliases
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);

@@ -23,16 +23,16 @@ class DatabaseSeeder extends Seeder
 
         // ── Categories ─────────────────────────────────────────────────
         $categories = [
-            ['name_ar' => 'الأجهزة الكهربائية',        'name_en' => 'Appliances',    'name_fr' => 'Électroménager', 'slug' => 'appliances'],
-            ['name_ar' => 'الأدوات المنزلية',           'name_en' => 'Houseware',     'name_fr' => 'Articles ménagers', 'slug' => 'houseware'],
-            ['name_ar' => 'الموبايلات واكسسواراتها',   'name_en' => 'Mobiles',       'name_fr' => 'Mobiles', 'slug' => 'mobiles'],
-            ['name_ar' => 'الملابس',                     'name_en' => 'Clothes',       'name_fr' => 'Vêtements', 'slug' => 'clothes'],
-            ['name_ar' => 'مستحضرات الجمال',            'name_en' => 'Beauty',        'name_fr' => 'Beauté', 'slug' => 'beauty'],
-            ['name_ar' => 'المفروشات',                   'name_en' => 'Furniture',     'name_fr' => 'Meubles', 'slug' => 'furniture'],
-            ['name_ar' => 'التلفزيونات',                 'name_en' => 'TVs',           'name_fr' => 'Téléviseurs', 'slug' => 'tvs'],
-            ['name_ar' => 'الأحذية',                     'name_en' => 'Shoes',         'name_fr' => 'Chaussures', 'slug' => 'shoes'],
-            ['name_ar' => 'اكسسوارات',                   'name_en' => 'Accessories',   'name_fr' => 'Accessoires', 'slug' => 'accessories'],
-            ['name_ar' => 'العاب الأطفال',               'name_en' => 'Toys',          'name_fr' => 'Jouets', 'slug' => 'toys'],
+            ['name_ar' => 'الأجهزة الكهربائية',        'name_en' => 'Appliances',    'name_fr' => 'Électroménager', 'slug' => 'appliances', 'image' => '/storage/products/category-1.jpg'],
+            ['name_ar' => 'الأدوات المنزلية',           'name_en' => 'Houseware',     'name_fr' => 'Articles ménagers', 'slug' => 'houseware', 'image' => '/storage/products/category-2.jpg'],
+            ['name_ar' => 'الموبايلات واكسسواراتها',   'name_en' => 'Mobiles',       'name_fr' => 'Mobiles', 'slug' => 'mobiles', 'image' => '/storage/products/category-3.jpg'],
+            ['name_ar' => 'الملابس',                     'name_en' => 'Clothes',       'name_fr' => 'Vêtements', 'slug' => 'clothes', 'image' => '/storage/products/category-1.jpg'],
+            ['name_ar' => 'مستحضرات الجمال',            'name_en' => 'Beauty',        'name_fr' => 'Beauté', 'slug' => 'beauty', 'image' => '/storage/products/category-2.jpg'],
+            ['name_ar' => 'المفروشات',                   'name_en' => 'Furniture',     'name_fr' => 'Meubles', 'slug' => 'furniture', 'image' => '/storage/products/category-3.jpg'],
+            ['name_ar' => 'التلفزيونات',                 'name_en' => 'TVs',           'name_fr' => 'Téléviseurs', 'slug' => 'tvs', 'image' => '/storage/products/category-1.jpg'],
+            ['name_ar' => 'الأحذية',                     'name_en' => 'Shoes',         'name_fr' => 'Chaussures', 'slug' => 'shoes', 'image' => '/storage/products/category-2.jpg'],
+            ['name_ar' => 'اكسسوارات',                   'name_en' => 'Accessories',   'name_fr' => 'Accessoires', 'slug' => 'accessories', 'image' => '/storage/products/category-3.jpg'],
+            ['name_ar' => 'العاب الأطفال',               'name_en' => 'Toys',          'name_fr' => 'Jouets', 'slug' => 'toys', 'image' => '/storage/products/category-1.jpg'],
         ];
 
         $createdCats = [];
@@ -984,6 +984,321 @@ class DatabaseSeeder extends Seeder
             ],
         ];
 
+        // Append the new rich media products
+        $sampleProducts[] = [
+            'name_ar'          => 'سماعات رأس لاسلكية برتقالية',
+            'name_en'          => 'Stylish Orange Headphones',
+            'name_fr'          => 'Casque Orange Élégant',
+            'description_ar'   => 'سماعات حديثة بجودة صوت ممتازة وتصميم عصري.',
+            'description_en'   => 'Modern headphones with crystal clear sound and stylish design.',
+            'description_fr'   => 'Casque moderne avec un son clair et un design élégant.',
+            'price'            => 89,
+            'original_price'   => 120,
+            'discount_percent' => 25,
+            'stock'            => 40,
+            'category_id'      => collect($createdCats)->firstWhere('slug', 'accessories')->id,
+            'images'           => [
+                    '/storage/products/headphones.png',
+                    '/storage/products/gallery-1.jpg'
+            ],
+            'is_featured'      => true,
+            'slug'             => 'stylish-orange-headphones',
+        ];
+
+        $sampleProducts[] = [
+            'name_ar'          => 'مجموعة مستحضرات تجميل فاخرة',
+            'name_en'          => 'Luxury Beauty Cosmetics Set',
+            'name_fr'          => 'Ensemble de cosmétiques de luxe',
+            'description_ar'   => 'مجموعة متكاملة للعناية بالبشرة والجمال.',
+            'description_en'   => 'Complete beauty and skincare cosmetic set.',
+            'description_fr'   => 'Ensemble de beauté complet pour le soin de la peau.',
+            'price'            => 150,
+            'original_price'   => 200,
+            'discount_percent' => 25,
+            'stock'            => 15,
+            'category_id'      => collect($createdCats)->firstWhere('slug', 'beauty')->id,
+            'images'           => [
+                    '/storage/products/cosmetics.png',
+                    '/storage/products/gallery-2.jpg'
+            ],
+            'is_featured'      => true,
+            'slug'             => 'luxury-beauty-cosmetics',
+        ];
+
+        $sampleProducts[] = [
+            'name_ar'          => 'كاميرا احترافية للتصوير',
+            'name_en'          => 'Professional Product Camera',
+            'name_fr'          => 'Appareil photo professionnel',
+            'description_ar'   => 'كاميرا احترافية بدقة عالية لتصوير المنتجات بدقة متناهية.',
+            'description_en'   => 'High resolution professional camera for exquisite photography.',
+            'description_fr'   => 'Appareil photo de haute résolution pour une photographie exquise.',
+            'price'            => 1200,
+            'original_price'   => 1500,
+            'discount_percent' => 20,
+            'stock'            => 5,
+            'category_id'      => collect($createdCats)->firstWhere('slug', 'appliances')->id,
+            'images'           => [
+                    '/storage/products/camera.png',
+                    '/storage/products/gallery-3.jpg',
+                    '/storage/products/gallery-4.jpg'
+            ],
+            'is_featured'      => true,
+            'slug'             => 'professional-product-camera',
+        ];
+
+        // --- NEW REALISTIC PRODUCTS USING NEW IMAGES ---
+        $sampleProducts[] = [
+            'name_ar'          => 'ساعة ذكية رياضية متطورة مقاومة للماء',
+            'name_en'          => 'Advanced Waterproof Sports Smartwatch',
+            'name_fr'          => 'Montre intelligente de sport avancée étanche',
+            'description_ar'   => "أبقِ على اطلاع دائم بنشاطك البدني مع هذه الساعة الذكية الرياضية المتطورة. \nتأتي مع شاشة عريضة ساطعة من نوع AMOLED وبطارية تدوم طويلاً حتى 14 يوماً.\nتحتوي على مئات الوضعيات الرياضية لتتبع نشاطك بدقة طوال الوقت.",
+            'description_en'   => "Stay on top of your physical activity with this advanced sports smartwatch.\nFeaturing a bright, vibrant AMOLED widescreen and an ultra-long battery life of up to 14 days.\nIncludes hundreds of sports modes to accurately track your everyday wellness.",
+            'description_fr'   => "Restez au courant de votre activité physique avec cette montre intelligente de sport avancée.",
+            'price'            => 199,
+            'original_price'   => 250,
+            'discount_percent' => 20,
+            'stock'            => 85,
+            'category_id'      => collect($createdCats)->firstWhere('slug', 'accessories')->id,
+            'images'           => [
+                    '/storage/products/product-4-1.jpg',
+                    '/storage/products/product-4-2.jpg',
+                    '/storage/products/showcase-img-4.jpg',
+                    '/storage/products/showcase-img-5.jpg'
+            ],
+            'specifications'   => [
+                ['label' => 'Brand', 'value' => 'TechGear'],
+                ['label' => 'Display', 'value' => '1.75 inch AMOLED High-Res'],
+                ['label' => 'Battery Life', 'value' => 'Up to 14 Days'],
+                ['label' => 'Water Resistance', 'value' => 'IP68 / 5ATM'],
+                ['label' => 'Connectivity', 'value' => 'Bluetooth 5.3'],
+            ],
+            'is_featured'      => true,
+            'slug'             => 'advanced-waterproof-sports-smartwatch',
+        ];
+
+        $sampleProducts[] = [
+            'name_ar'          => 'مجموعة نظارات شمسية كلاسيكية (للجنسين)',
+            'name_en'          => 'Classic Unisex Sunglasses Collection',
+            'name_fr'          => 'Collection de lunettes de soleil unisexe classique',
+            'description_ar'   => "اكتسب إطلالة أنيقة وعصرية مع هذه النظارات الشمسية الكلاسيكية.\nعدسات مستقطبة (Polarized) توفر حماية بنسبة 100% من الأشعة فوق البنفسجية.\nإطار خفيف الوزن ومتين مصمم للارتداء اليومي في مختلف الظروف.",
+            'description_en'   => "Achieve an elegant and modern look with these classic sunglasses.\nFully polarized lenses offer 100% UV protection for your eyes against harmful rays.\nLightweight and highly durable frame engineered for all-day daily wear.",
+            'description_fr'   => "Obtenez un look élégant et moderne avec ces lunettes de soleil classiques.",
+            'price'            => 45,
+            'original_price'   => 60,
+            'discount_percent' => 25,
+            'stock'            => 200,
+            'category_id'      => collect($createdCats)->firstWhere('slug', 'accessories')->id,
+            'images'           => [
+                    '/storage/products/product-12-1.jpg',
+                    '/storage/products/product-12-2.jpg',
+                    '/storage/products/product-11-2.jpg',
+                    '/storage/products/deals-1.jpg'
+            ],
+            'specifications'   => [
+                ['label' => 'Frame Material', 'value' => 'Premium Acetate'],
+                ['label' => 'Lenses', 'value' => 'Polarized / 100% UV400 Protection'],
+                ['label' => 'Style', 'value' => 'Classic Vintage / Unisex'],
+                ['label' => 'Weight', 'value' => '32 grams'],
+            ],
+            'is_featured'      => true,
+            'slug'             => 'classic-unisex-sunglasses-collection',
+        ];
+
+        $sampleProducts[] = [
+            'name_ar'          => 'حقيبة ظهر فاخرة للسفر والأعمال',
+            'name_en'          => 'Premium Travel & Business Backpack',
+            'name_fr'          => 'Sac à dos de voyage et d\'affaires haut de gamme',
+            'description_ar'   => "حقيبة ظهر واسعة بتصميم متميز تلائم احتياجاتك في العمل والسفر.\nتحتوي على جيب مبطن لحماية الحواسيب المحمولة حتى مقاس 15.6 بوصة ومنافذ USB خفية لشحن هاتفك.",
+            'description_en'   => "A spacious backpack with a luxury design perfectly suited for business and travel.\nFeatures a dedicated padded compartment for laptops up to 15.6 inches and a hidden USB charging port.",
+            'description_fr'   => "Un sac à dos spacieux avec un design luxueux parfaitement adapté pour les affaires et les voyages.",
+            'price'            => 70,
+            'original_price'   => 105,
+            'discount_percent' => 33,
+            'stock'            => 40,
+            'category_id'      => collect($createdCats)->firstWhere('slug', 'accessories')->id,
+            'images'           => [
+                    '/storage/products/product-7-1.jpg',
+                    '/storage/products/product-7-2.jpg',
+                    '/storage/products/product-13-1.jpg',
+                    '/storage/products/product-13-2.jpg'
+            ],
+            'specifications'   => [
+                ['label' => 'Material', 'value' => 'Water-resistant Oxford Fabric'],
+                ['label' => 'Capacity', 'value' => '25 Liters / 15.6" Laptop'],
+                ['label' => 'Features', 'value' => 'Anti-theft pockets, USB Charging Port'],
+                ['label' => 'Dimensions', 'value' => '18" x 12" x 6"'],
+            ],
+            'is_featured'      => true,
+            'slug'             => 'premium-travel-business-backpack',
+        ];
+
+        $sampleProducts[] = [
+            'name_ar'          => 'هاتف ألترا الذكي برو ماكس 5G',
+            'name_en'          => 'Ultra Smart Pro Max 5G Smartphone',
+            'name_fr'          => 'Smartphone Ultra Smart Pro Max 5G',
+            'description_ar'   => "أقوى هاتف ذكي على الإطلاق مع كاميرا خرافية بدقة 200 ميجابكسل وشاشة لا مثيل لها بتردد 144 هرتز للمحترفين وعشاق الألعاب.\nأداء المعالج يكسر كل حدود السرعة ليوفر تجربة سلسة استثنائية مع دعم شبكات الجيل الخامس 5G.",
+            'description_en'   => "The most powerful smartphone ever with a breathtaking 200MP camera and an unmatched 144Hz display for professionals and gamers.\nProcessor performance breaks all speed limits to provide an exceptionally smooth 5G experience.",
+            'description_fr'   => "Le smartphone le plus puissant de tous les temps avec un appareil photo époustouflant.",
+            'price'            => 1199,
+            'original_price'   => 1350,
+            'discount_percent' => 11,
+            'stock'            => 15,
+            'category_id'      => collect($createdCats)->firstWhere('slug', 'mobiles')->id,
+            'images'           => [
+                    '/storage/products/product-1-2.jpg',
+                    '/storage/products/product-2-1.jpg',
+                    '/storage/products/product-2-2.jpg'
+            ],
+            'specifications'   => [
+                ['label' => 'Display', 'value' => '6.8 inch Dynamic AMOLED 144Hz'],
+                ['label' => 'Processor', 'value' => 'Snapdragon 8 Gen 3'],
+                ['label' => 'Camera', 'value' => '200MP Primary, 50MP Ultrawide, 10x Optical Zoom'],
+                ['label' => 'Battery', 'value' => '5500mAh / 65W Fast Charge'],
+            ],
+            'is_featured'      => true,
+            'slug'             => 'ultra-smart-pro-max-5g',
+        ];
+
+        $sampleProducts[] = [
+            'name_ar'          => 'سماعات ألعاب لاسلكية بمحيط صوتي 7.1',
+            'name_en'          => 'Wireless Gaming Headset 7.1 Surround',
+            'name_fr'          => 'Casque de jeu sans fil 7.1 Surround',
+            'description_ar'   => "عشاق الألعاب، استمتعوا بتجربة انغماس كاملة مع هذه السماعات المخصصة التي تقدم صوتاً محيطياً مذهلاً 7.1.\nتوفر ميكروفون احترافي بخاصية عزل الضوضاء لضمان التواصل الواضح مع فريقك، وبطارية لـ 50 ساعة.",
+            'description_en'   => "Gamers, immerse yourselves fully with this dedicated headset offering stunning 7.1 surround sound.\nFeatures a professional noise-canceling microphone for crystal clear comms and a massive 50-hour battery life.",
+            'description_fr'   => "Joueurs, plongez-vous pleinement avec ce casque dédié offrant un son surround 7.1 époustouflant.",
+            'price'            => 129,
+            'original_price'   => 160,
+            'discount_percent' => 19,
+            'stock'            => 45,
+            'category_id'      => collect($createdCats)->firstWhere('slug', 'accessories')->id,
+            'images'           => [
+                    '/storage/products/product-8-1.jpg',
+                    '/storage/products/product-8-2.jpg',
+                    '/storage/products/product-9-1.jpg',
+                    '/storage/products/product-9-2.jpg'
+            ],
+            'specifications'   => [
+                ['label' => 'Audio', 'value' => '7.1 Virtual Surround Sound'],
+                ['label' => 'Connectivity', 'value' => '2.4GHz Wireless USB + 3.5mm'],
+                ['label' => 'Microphone', 'value' => 'Detachable Noise Cancelling'],
+                ['label' => 'Battery', 'value' => 'Up to 50 Hours'],
+            ],
+            'is_featured'      => true,
+            'slug'             => 'wireless-gaming-headset-7-1',
+        ];
+
+        $sampleProducts[] = [
+            'name_ar'          => 'تلفزيون ذكي 65 بوصة 4K فائق الوضوح',
+            'name_en'          => '65 Inch 4K Ultra HD Smart TV',
+            'name_fr'          => 'Téléviseur intelligent 65 pouces 4K Ultra HD',
+            'description_ar'   => "شاهد برامجك وأفلامك المفضلة بتفاصيل مذهلة مع تلفزيون 65 بوصة 4K. \nيدعم تقنيات HDR10 وDolby Vision لتجربة سينمائية في منزلك، إضافة لمتجر تطبيقات واسع يضم نتفليكس ويوتيوب والمزيد.",
+            'description_en'   => "Watch your favorite shows and movies in breathtaking detail with this 65-inch 4K TV.\nSupports HDR10 and Dolby Vision for a cinematic experience right at home, plus a vast smart hub with Netflix, YouTube and more.",
+            'description_fr'   => "Regardez vos émissions et films préférés avec des détails époustouflants.",
+            'price'            => 899,
+            'original_price'   => 1150,
+            'discount_percent' => 21,
+            'stock'            => 10,
+            'category_id'      => collect($createdCats)->firstWhere('slug', 'tvs')->id,
+            'images'           => [
+                    '/storage/products/product-3-1.jpg',
+                    '/storage/products/product-5-1.jpg',
+                    '/storage/products/product-5-2.jpg',
+                    '/storage/products/product-6-2.jpg'
+            ],
+            'specifications'   => [
+                ['label' => 'Display Category', 'value' => '65" 4K UHD LED'],
+                ['label' => 'HDR', 'value' => 'Dolby Vision / HDR10+'],
+                ['label' => 'Smart Features', 'value' => 'Android TV, Voice Control, App Store'],
+                ['label' => 'Ports', 'value' => '4x HDMI 2.1, 2x USB, Ethernet'],
+            ],
+            'is_featured'      => true,
+            'slug'             => '65-inch-4k-uhd-smart-tv',
+        ];
+
+        $sampleProducts[] = [
+            'name_ar'          => 'لابتوب احترافي ماكس 16 بوصة للإبداع',
+            'name_en'          => 'ProBook Max 16-inch Creator Laptop',
+            'name_fr'          => 'Ordinateur portable ProBook Max 16 pouces',
+            'description_ar'   => "أقوى لابتوب للمبدعين والمحترفين، يأتي بشريحة M3 الاستثنائية التي تقدم أداءً لا يضاهى في المونتاج وتعديل الصور.\nشاشة Liquid Retina مذهلة، وبطارية تدوم حتى 22 ساعة للعمل بدون انقطاع.",
+            'description_en'   => "The ultimate powerhouse for creators and professionals, featuring the groundbreaking M3 chip for peerless video editing and rendering.\nStunning Liquid Retina display and up to 22 hours of battery life for uninterrupted workflow.",
+            'description_fr'   => "La puissance ultime pour les créateurs et les professionnels, avec la puce M3 révolutionnaire.",
+            'price'            => 2499,
+            'original_price'   => 2700,
+            'discount_percent' => 7,
+            'stock'            => 10,
+            'category_id'      => collect($createdCats)->firstWhere('slug', 'appliances')->id,
+            'images'           => [
+                    '/storage/products/product-10.jpg',
+                    '/storage/products/product-10-1.jpg',
+                    '/storage/products/product-10-2.jpg',
+                    '/storage/products/showcase-img-1.jpg'
+            ],
+            'specifications'   => [
+                ['label' => 'Processor', 'value' => 'M3 Max 14-Core CPU'],
+                ['label' => 'RAM', 'value' => '36GB Unified Memory'],
+                ['label' => 'Storage', 'value' => '1TB SSD'],
+                ['label' => 'Display', 'value' => '16.2" Mini-LED 120Hz'],
+            ],
+            'is_featured'      => true,
+            'slug'             => 'probook-max-16-inch-creator',
+        ];
+
+        $sampleProducts[] = [
+            'name_ar'          => 'محفظة جلدية فاخرة للرجال أصلية',
+            'name_en'          => 'Luxury Genuine Leather Men\'s Wallet',
+            'name_fr'          => 'Portefeuille de luxe en cuir véritable pour hommes',
+            'description_ar'   => "محفظة فاخرة مصنوعة يدوياً من الجلد الأصلي الإيطالي، مصممة بأناقة مع خاصية حظر طاقات RFID لحماية بطاقاتك البنكية من السرقة اللاسلكية.\nتتميز بعدة جيوب تتسع لـ 10 بطاقات وحامل للعملات الورقية.",
+            'description_en'   => "A luxurious handcrafted wallet made from genuine Italian leather, elegantly designed with RFID blocking technology to protect your cards from wireless theft.\nFeatures multiple slots accommodating up to 10 cards and a cash sleeve.",
+            'description_fr'   => "Un luxueux portefeuille fait à la main en cuir italien véritable, élégamment conçu avec la technologie de blocage RFID.",
+            'price'            => 65,
+            'original_price'   => 85,
+            'discount_percent' => 23,
+            'stock'            => 120,
+            'category_id'      => collect($createdCats)->firstWhere('slug', 'accessories')->id,
+            'images'           => [
+                    '/storage/products/product-01.jpg',
+                    '/storage/products/product-02.jpg',
+                    '/storage/products/product-03.jpg',
+                    '/storage/products/product-11-1.jpg'
+            ],
+            'specifications'   => [
+                ['label' => 'Material', 'value' => '100% Genuine Italian Leather'],
+                ['label' => 'Security', 'value' => 'RFID Blocking Layer'],
+                ['label' => 'Capacity', 'value' => '10 Card Slots, 1 Cash Sleeves'],
+                ['label' => 'Dimensions', 'value' => '4.5" x 3.5" x 0.5"'],
+            ],
+            'is_featured'      => false,
+            'slug'             => 'luxury-genuine-leather-wallet',
+        ];
+
+        $sampleProducts[] = [
+            'name_ar'          => 'سماعات رأس لاسلكية بخاصية عزل الضوضاء برو',
+            'name_en'          => 'Noise Cancelling Over-Ear Headphones Pro',
+            'name_fr'          => 'Casque sans fil à réduction de bruit Pro',
+            'description_ar'   => "اغمر نفسك في عالم الموسيقى النقي مع سماعات الرأس اللاسلكية المتطورة، المزودة بتقنية عزل الضوضاء النشط (ANC).\nصوت جهير عميق ووسائد أذن مريحة جداً تناسب الاستخدام لساعات طويلة.",
+            'description_en'   => "Immerse yourself in a world of pure music with these advanced wireless headphones equipped with Active Noise Cancellation (ANC).\nFeatures deep bass response and incredibly comfortable ear cushions for hours of listening.",
+            'description_fr'   => "Plongez dans un monde de musique pure avec ce casque sans fil avancé doté de la réduction active du bruit (ANC).",
+            'price'            => 199,
+            'original_price'   => 299,
+            'discount_percent' => 33,
+            'stock'            => 60,
+            'category_id'      => collect($createdCats)->firstWhere('slug', 'accessories')->id,
+            'images'           => [
+                    '/storage/products/headphones.png',
+                    '/storage/products/product-17.jpg',
+                    '/storage/products/product-16.jpg',
+                    '/storage/products/showcase-img-7.jpg'
+            ],
+            'specifications'   => [
+                ['label' => 'Technology', 'value' => 'Active Noise Cancelling (ANC)'],
+                ['label' => 'Battery Life', 'value' => 'Up to 40 Hours with ANC'],
+                ['label' => 'Drivers', 'value' => '40mm High-Resolution Audio Drivers'],
+                ['label' => 'Weight', 'value' => '250g (Foldable Design)'],
+            ],
+            'is_featured'      => true,
+            'slug'             => 'noise-cancelling-headphones-pro',
+        ];
+
         foreach ($sampleProducts as $productData) {
             $slug = $productData['slug'];
             unset($productData['slug']);
@@ -1000,6 +1315,55 @@ class DatabaseSeeder extends Seeder
             'expires_at'       => now()->addMonths(3),
         ]);
 
-        $this->command->info('✅ ECAVO seeded: 1 admin, ' . count($categories) . ' categories, ' . count($sampleProducts) . ' products, 1 coupon.');
+        // ── Sample Users for Reviews ──────────────────────────────────
+        $testUsers = [];
+        for ($i = 1; $i <= 3; $i++) {
+            $testUsers[] = User::create([
+                'name'     => "Test User $i",
+                'email'    => "user$i@ecavo.com",
+                'password' => bcrypt('password'),
+                'role'     => 'customer',
+                'phone'    => "+123456789$i",
+            ]);
+        }
+
+        // ── Seed Reviews, large Description and Specifications ──────────────
+        $allProducts = Product::all();
+        foreach ($allProducts as $product) {
+            // Give every product a rich description array if empty
+            if (empty($product->description_ar)) {
+                $product->description_ar = "هذا المنتج رائع جدا ويتمتع بمواصفات عالية الجودة. مصمم خصيصا لتلبية احتياجاتك اليومية بأفضل الخامات.";
+            }
+            if (empty($product->description_en)) {
+                $product->description_en = "This is a highly durable and premium product designed for daily use. It offers top quality and great value.";
+            }
+
+            // Give every product specifications if empty
+            if (empty($product->specifications)) {
+                $product->specifications = collect([
+                    ['label' => 'Brand', 'value' => 'Ecavo Originals'],
+                    ['label' => 'Material', 'value' => 'Premium Quality'],
+                    ['label' => 'Warranty', 'value' => '1 Year'],
+                    ['label' => 'Color', 'value' => 'Mixed'],
+                ])->toArray();
+            }
+            $product->save();
+
+            // Add 1-3 random reviews per product
+            $reviewCount = rand(1, 3);
+            $randomUsers = collect($testUsers)->random($reviewCount);
+            
+            foreach ($randomUsers as $randomUser) {
+                \App\Models\Review::create([
+                    'product_id' => $product->id,
+                    'user_id'    => $randomUser->id,
+                    'rating'     => rand(4, 5),
+                    'comment'    => "Great product! Highly recommended. Excellent quality.",
+                    'approved'   => true,
+                ]);
+            }
+        }
+
+        $this->command->info('✅ ECAVO seeded: 1 admin, 3 test users, ' . count($categories) . ' categories, ' . count($sampleProducts) . ' products, reviews added, 1 coupon.');
     }
 }

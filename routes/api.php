@@ -12,12 +12,18 @@ use App\Http\Controllers\Api\Admin\AdminOrderController;
 use App\Http\Controllers\Api\Admin\AdminProductController;
 use App\Http\Controllers\Api\Admin\AdminCategoryController;
 use App\Http\Controllers\Api\Admin\ImageUploadController;
+use App\Http\Controllers\Api\RecentlyViewedController;
+use App\Http\Controllers\Api\GoogleAuthController;
+use App\Http\Controllers\Api\ProfileController;
 
 // ─── Public endpoints ──────────────────────────────────────────────────────────
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login',    [AuthController::class, 'login']);
+    // Google OAuth — browser navigates to these directly (not XHR)
+    Route::get('google/redirect',  [GoogleAuthController::class, 'redirect']);
+    Route::get('google/callback',  [GoogleAuthController::class, 'callback']);
 });
 
 Route::get('categories',              [CategoryController::class, 'index']);
@@ -26,6 +32,9 @@ Route::get('categories/{slug}/products', [ProductController::class, 'byCategory'
 
 Route::get('products',       [ProductController::class, 'index']);
 Route::get('products/{slug}', [ProductController::class, 'show']);
+
+// Recently viewed — public GET (guest: pass ?ids=1,2,3 from localStorage)
+Route::get('recently-viewed', [RecentlyViewedController::class, 'index']);
 
 // Cart (guest + auth)
 Route::prefix('cart')->group(function () {
@@ -42,6 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('auth/me',      [AuthController::class, 'me']);
     Route::post('auth/logout', [AuthController::class, 'logout']);
+    Route::post('auth/profile',[ProfileController::class, 'update']);
 
     // Orders
     Route::prefix('orders')->group(function () {
@@ -56,6 +66,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/',                        [WishlistController::class, 'index']);
         Route::post('toggle/{product_id}',     [WishlistController::class, 'toggle']);
     });
+
+    // Recently viewed — auth routes
+    Route::post('recently-viewed/{product_id}', [RecentlyViewedController::class, 'track']);
 
     // ─── Admin (auth + admin role) ────────────────────────────────────────────
 

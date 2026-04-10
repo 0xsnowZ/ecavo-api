@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'google' => [
+        'client_id'     => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        // The callback must exactly match what is registered in Google Cloud Console
+        'redirect'      => env('APP_URL') . '/api/auth/google/callback',
+    ],
+
 ];
