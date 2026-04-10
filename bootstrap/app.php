@@ -24,8 +24,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);
 
-        // Stateful domains for Sanctum (cookie-based, optional)
-        $middleware->statefulApi();
+        // NOTE: statefulApi() is intentionally NOT called here.
+        // We use Bearer token auth only (not cookie-based SPA).
+        // statefulApi() adds EnsureFrontendRequestsAreStateful which
+        // enforces CSRF checks and breaks token-based auth clients.
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Always return JSON for API exceptions

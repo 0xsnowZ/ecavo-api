@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\AdminOrderController;
 use App\Http\Controllers\Api\Admin\AdminProductController;
 use App\Http\Controllers\Api\Admin\AdminCategoryController;
+use App\Http\Controllers\Api\Admin\ImageUploadController;
 
 // ─── Public endpoints ──────────────────────────────────────────────────────────
 
@@ -85,5 +86,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('{id}',  [AdminCategoryController::class, 'update']);
             Route::delete('{id}', [AdminCategoryController::class, 'destroy']);
         });
+        // Image upload
+        Route::post('upload/image',   [ImageUploadController::class, 'store']);
+        Route::delete('upload/image', [ImageUploadController::class, 'destroy']);
     });
 });
