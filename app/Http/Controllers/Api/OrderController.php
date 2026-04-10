@@ -23,17 +23,41 @@ class OrderController extends Controller
             'notes'       => 'nullable|string',
             'coupon_code' => 'nullable|string',
             'address_id'  => 'nullable|exists:addresses,id',
+            // Frontend cart items sent directly
+            'items'              => 'nullable|array',
+            'items.*.product_id' => 'required_with:items|exists:products,id',
+            'items.*.qty'        => 'required_with:items|integer|min:1',
+            'items.*.variant_id' => 'nullable|exists:product_variants,id',
         ]);
 
-        // Resolve cart items
-        $cartQuery = $request->user()
-            ? CartItem::where('user_id', $request->user()->id)
-            : CartItem::where('session_id', $request->session()->getId());
+        // Resolve cart: prefer items sent from frontend, fallback to DB cart
+        $frontendItems = $request->input('items', []);
 
-        $cartItems = $cartQuery->with(['product', 'variant'])->get();
+        if (!empty($frontendItems)) {
+            // Build cart from frontend payload
+            $cartItems = collect($frontendItems)->map(function ($item) {
+                $product = \App\Models\Product::find($item['product_id']);
+                $variant = isset($item['variant_id'])
+                    ? \App\Models\ProductVariant::find($item['variant_id'])
+                    : null;
+                return (object)[
+                    'product'    => $product,
+                    'variant'    => $variant,
+                    'product_id' => $item['product_id'],
+                    'variant_id' => $item['variant_id'] ?? null,
+                    'qty'        => $item['qty'],
+                ];
+            })->filter(fn($i) => $i->product !== null);
+        } else {
+            // Fallback to database session cart
+            $cartQuery = $request->user()
+                ? CartItem::where('user_id', $request->user()->id)
+                : CartItem::where('session_id', $request->session()->getId());
+            $cartItems = $cartQuery->with(['product', 'variant'])->get();
+        }
 
         if ($cartItems->isEmpty()) {
-            return response()->json(['message' => 'السلة فارغة.'], 422);
+            return response()->json(['message' => 'Your cart is empty.'], 422);
         }
 
         // Calculate totals
@@ -55,7 +79,7 @@ class OrderController extends Controller
         $total = $subtotal + $deliveryFee - $discount;
 
         $order = DB::transaction(function () use (
-            $request, $data, $cartItems, $subtotal, $deliveryFee, $discount, $total, $coupon
+            $request, $data, $cartItems, $subtotal, $deliveryFee, $discount, $total, $coupon, $frontendItems
         ) {
             $order = Order::create([
                 'user_id'       => $request->user()?->id,
@@ -78,7 +102,7 @@ class OrderController extends Controller
                     'order_id'     => $order->id,
                     'product_id'   => $item->product_id,
                     'variant_id'   => $item->variant_id,
-                    'product_name' => $item->product->name_ar,
+                    'product_name' => $item->product->name_en ?? $item->product->name_ar,
                     'unit_price'   => $unitPrice,
                     'qty'          => $item->qty,
                     'total'        => $unitPrice * $item->qty,
@@ -91,14 +115,16 @@ class OrderController extends Controller
             // Increment coupon usage
             $coupon?->increment('used_count');
 
-            // Clear cart
-            $cartItems->each->delete();
+            // Clear DB cart if it was used
+            if (empty($frontendItems)) {
+                $cartItems->each->delete();
+            }
 
             return $order->load('items');
         });
 
         return response()->json([
-            'message' => 'تم تقديم الطلب بنجاح.',
+            'message' => 'Order placed successfully.',
             'order'   => $this->formatOrder($order),
         ], 201);
     }

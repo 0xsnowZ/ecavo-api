@@ -12,7 +12,7 @@ class Product extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'name_ar', 'name_en', 'slug', 'description_ar', 'description_en',
+        'name_ar', 'name_en', 'name_fr', 'slug', 'description_ar', 'description_en', 'description_fr',
         'price', 'original_price', 'discount_percent', 'stock',
         'category_id', 'images', 'specifications',
         'is_active', 'is_featured', 'deal_ends_at',
@@ -57,13 +57,17 @@ class Product extends Model
     public function getNameAttribute(): string
     {
         $locale = app()->getLocale();
-        return $locale === 'ar' ? $this->name_ar : $this->name_en;
+        if ($locale === 'ar') return $this->name_ar;
+        if ($locale === 'fr') return $this->name_fr ?? $this->name_en;
+        return $this->name_en;
     }
 
     public function getDescriptionAttribute(): string
     {
         $locale = app()->getLocale();
-        return $locale === 'ar' ? ($this->description_ar ?? '') : ($this->description_en ?? '');
+        if ($locale === 'ar') return $this->description_ar ?? '';
+        if ($locale === 'fr') return $this->description_fr ?? $this->description_en ?? '';
+        return $this->description_en ?? '';
     }
 
     // Scope: active products

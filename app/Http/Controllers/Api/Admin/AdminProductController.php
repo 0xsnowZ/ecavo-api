@@ -12,7 +12,7 @@ class AdminProductController extends Controller
     /** GET /api/admin/products */
     public function index(Request $request)
     {
-        $query = Product::with('category')->withTrashed();
+        $query = Product::with('category');
 
         if ($search = $request->get('search')) {
             $query->where('name_ar', 'like', "%{$search}%")
@@ -36,8 +36,10 @@ class AdminProductController extends Controller
         $data = $request->validate([
             'name_ar'          => 'required|string|max:255',
             'name_en'          => 'required|string|max:255',
+            'name_fr'          => 'nullable|string|max:255',
             'description_ar'   => 'nullable|string',
             'description_en'   => 'nullable|string',
+            'description_fr'   => 'nullable|string',
             'price'            => 'required|numeric|min:0',
             'original_price'   => 'nullable|numeric|min:0',
             'discount_percent' => 'nullable|integer|min:0|max:100',
@@ -66,8 +68,10 @@ class AdminProductController extends Controller
         $data = $request->validate([
             'name_ar'          => 'string|max:255',
             'name_en'          => 'string|max:255',
+            'name_fr'          => 'nullable|string|max:255',
             'description_ar'   => 'nullable|string',
             'description_en'   => 'nullable|string',
+            'description_fr'   => 'nullable|string',
             'price'            => 'numeric|min:0',
             'original_price'   => 'nullable|numeric|min:0',
             'discount_percent' => 'nullable|integer|min:0|max:100',

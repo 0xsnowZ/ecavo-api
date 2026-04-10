@@ -11,7 +11,8 @@ class ProductController extends Controller
     /** GET /api/products */
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'reviews'])
+        $query = Product::with(['category'])->withCount(['reviews as review_count'])
+            ->withAvg(['reviews as avg_rating' => fn($q) => $q->where('approved', true)], 'rating')
             ->active();
 
         // Search
@@ -52,7 +53,7 @@ class ProductController extends Controller
         $products = $query->paginate($request->get('per_page', 16));
 
         return response()->json([
-            'data'  => $products->items(),
+            'data'  => collect($products->items())->map(fn($p) => $this->formatListItem($p)),
             'meta'  => [
                 'total'        => $products->total(),
                 'current_page' => $products->currentPage(),
@@ -80,6 +81,37 @@ class ProductController extends Controller
     {
         $request->merge(['category' => $slug]);
         return $this->index($request);
+    }
+
+    /** Compact shape returned by the list endpoint (used by ProductCard) */
+    private function formatListItem(Product $p): array
+    {
+        return [
+            'id'               => $p->id,
+            'slug'             => $p->slug,
+            'name_ar'          => $p->name_ar,
+            'name_en'          => $p->name_en,
+            'name_fr'          => $p->name_fr,
+            'description_ar'   => $p->description_ar,
+            'description_en'   => $p->description_en,
+            'description_fr'   => $p->description_fr,
+            'price'            => (float) $p->price,
+            'original_price'   => $p->original_price ? (float) $p->original_price : null,
+            'discount_percent' => $p->discount_percent,
+            'stock'            => $p->stock,
+            'images'           => $p->images ?? [],
+            'is_featured'      => $p->is_featured,
+            'deal_ends_at'     => $p->deal_ends_at?->toIso8601String(),
+            'avg_rating'       => round((float) ($p->avg_rating ?? 0), 1),
+            'review_count'     => (int) ($p->review_count ?? 0),
+            'category'         => $p->category ? [
+                'id'      => $p->category->id,
+                'name_ar' => $p->category->name_ar,
+                'name_en' => $p->category->name_en,
+                'name_fr' => $p->category->name_fr,
+                'slug'    => $p->category->slug,
+            ] : null,
+        ];
     }
 
     private function formatProduct(Product $p): array

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Category extends Model
 {
     protected $fillable = [
-        'name_ar', 'name_en', 'slug', 'parent_id', 'image', 'is_active', 'sort_order',
+        'name_ar', 'name_en', 'name_fr', 'slug', 'parent_id', 'image', 'is_active', 'sort_order',
     ];
 
     protected $casts = ['is_active' => 'boolean'];
@@ -33,6 +33,8 @@ class Category extends Model
     public function getNameAttribute(): string
     {
         $locale = app()->getLocale();
-        return $locale === 'ar' ? $this->name_ar : $this->name_en;
+        if ($locale === 'ar') return $this->name_ar;
+        if ($locale === 'fr') return $this->name_fr ?? $this->name_en;
+        return $this->name_en;
     }
 }
