@@ -30,6 +30,8 @@ RUN composer install --no-interaction --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 RUN chmod -R 775 /app/storage /app/bootstrap/cache
 
-# Run the Laravel development server
-# Railway automatically assigns the $PORT environment variable, which this script natively uses!
-CMD php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+# Expose port exactly so Railway's edge proxy knows where to route traffic
+EXPOSE 8000
+
+# Run the Laravel development server on that exact port
+CMD php artisan serve --host=0.0.0.0 --port=8000
