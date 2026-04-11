@@ -14,9 +14,9 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
 
-# Enable Apache mod_rewrite for Laravel routing
-RUN a2enmod rewrite
-
+# Enable Apache mod_rewrite for Laravel routing and ensure correct MPM is loaded
+RUN a2dismod mpm_event mpm_worker || true
+RUN a2enmod rewrite mpm_prefork
 # Update the default Apache site to point to the correct Laravel public directory
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
