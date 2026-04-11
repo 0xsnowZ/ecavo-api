@@ -38,8 +38,6 @@ RUN composer install --no-interaction --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Change port to $PORT dynamically for Render (Render passes the PORT env variable automatically)
-RUN sed -i 's/80/${PORT}/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
-
-EXPOSE ${PORT}
+# Use default port 80 for Docker applications like Railway
+EXPOSE 80
 CMD ["apache2-foreground"]
