@@ -22,8 +22,9 @@ Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login',    [AuthController::class, 'login']);
     // Google OAuth — browser navigates to these directly (not XHR)
-    Route::get('google/redirect',  [GoogleAuthController::class, 'redirect']);
-    Route::get('google/callback',  [GoogleAuthController::class, 'callback']);
+    Route::get('google/redirect',       [GoogleAuthController::class, 'redirect']);
+    Route::get('google/callback',       [GoogleAuthController::class, 'callback']);
+    Route::post('google/token-login',   [GoogleAuthController::class, 'tokenLogin']);
 });
 
 Route::get('categories',              [CategoryController::class, 'index']);

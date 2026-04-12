@@ -109,8 +109,32 @@ class GoogleAuthController extends Controller
             'None'           // sameSite
         );
 
-        // Redirect browser to the frontend. Cookie travels with the response.
-        return redirect(env('FRONTEND_URL', 'http://localhost:5173'))
-            ->withCookie($cookie);
+        // Redirect browser to the frontend with the token in the URL.
+        // We do this because modern browsers block Third-Party cookies set during cross-site redirects.
+        return redirect(env('FRONTEND_URL', 'http://localhost:5173') . '/login?token=' . $token);
+    }
+
+    /**
+     * POST /api/auth/google/token-login
+     *
+     * The frontend calls this endpoint via Axios with the token it received from the URL.
+     * Since this is an XHR request originating from the frontend (1st party context),
+     * the browser WILL accept the HTTP-Only cookie we return!
+     */
+    public function tokenLogin(\Illuminate\Http\Request $request)
+    {
+        $data = $request->validate(['token' => 'required|string']);
+
+        $token = \Laravel\Sanctum\PersonalAccessToken::findToken($data['token']);
+
+        if (!$token || !$token->tokenable) {
+            return response()->json(['message' => 'Invalid or expired token'], 401);
+        }
+
+        $user = $token->tokenable;
+
+        // Re-issue the HTTP-Only cookie natively using the AuthController logic
+        $authController = app(AuthController::class);
+        return $authController->respondWithToken($user, $data['token']);
     }
 }
