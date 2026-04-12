@@ -114,7 +114,7 @@ class DatabaseSeeder extends Seeder
                 'discount_percent' => $discountPercent,
                 'stock'            => rand(5, 100),
                 'category_id'      => $category->id,
-                'images'           => ['/images/products/' . urlencode($filename)],
+                'images'           => ['/images/products/' . rawurlencode($filename)],
                 
                 'is_featured'      => ($index % 5 === 0) ? true : false,
                 'deal_ends_at'     => ($index % 8 === 0) ? now()->addDays(rand(1, 7)) : null,
