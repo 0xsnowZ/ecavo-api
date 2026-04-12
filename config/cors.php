@@ -8,7 +8,8 @@ return [
         'http://localhost:3000',
     ],
     'allowed_origins_patterns' => [
-        '#^https?://.*\.vercel\.app$#'
+        '#^https?://.*\.vercel\.app$#',
+        '#^https?://.*\.up\.railway\.app$#'
     ],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],

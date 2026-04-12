@@ -1,2 +1,19 @@
 [variables]
 NIXPACKS_PHP_ROOT_DIR = "/app/public"
+
+[phases.setup]
+nixPkgs = ["php", "phpPackages.composer"]
+
+[phases.install]
+cmds = ["composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev"]
+
+[phases.build]
+cmds = [
+    "php artisan config:cache",
+    "php artisan route:cache",
+    "php artisan view:cache"
+]
+
+[start]
+# We use the built-in PHP server which acts as a robust CLI server and is less prone to Nginx configuration crashes on Railway Docker builds.
+cmd = "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"
