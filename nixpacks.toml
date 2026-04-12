@@ -11,9 +11,6 @@ cmds = ["composer install --no-interaction --prefer-dist --optimize-autoloader -
 cmds = [
     "php artisan config:cache",
     "php artisan route:cache",
-    "php artisan view:cache"
+    "php artisan view:cache",
+    "php artisan migrate --force"
 ]
-
-[start]
-# We use the built-in PHP server which acts as a robust CLI server and is less prone to Nginx configuration crashes on Railway Docker builds.
-cmd = "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"
