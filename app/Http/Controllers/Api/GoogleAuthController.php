@@ -103,10 +103,10 @@ class GoogleAuthController extends Controller
             60 * 24 * 30,   // 30 days
             '/',
             null,
-            false,           // secure — set true in production (HTTPS)
+            true,            // secure
             true,            // httpOnly
             false,
-            'Lax'
+            'None'           // sameSite
         );
 
         // Redirect browser to the frontend. Cookie travels with the response.

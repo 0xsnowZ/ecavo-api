@@ -80,10 +80,10 @@ class AuthController extends Controller
             60 * 24 * 30,        // 30 days in minutes
             '/',                 // path
             null,                // domain (null = current)
-            false,               // secure (set true in production with HTTPS)
+            true,                // secure
             true,                // httpOnly — JS cannot read this cookie
             false,               // raw
-            'Lax'                // sameSite
+            'None'               // sameSite
         );
 
         return response()
