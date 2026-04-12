@@ -29,7 +29,7 @@ class ImageUploadController extends Controller
         $path      = $file->storeAs('products', $filename, 'public');
 
         return response()->json([
-            'url'      => Storage::disk('public')->url($path),
+            'url'      => '/storage/' . $path,
             'path'     => $path,
             'filename' => $filename,
         ], 201);

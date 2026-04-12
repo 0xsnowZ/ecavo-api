@@ -599,8 +599,8 @@ class DatabaseSeeder extends Seeder
                 'stock'            => 1,
                 'category_id'      => collect($createdCats)->firstWhere('slug', 'appliances')->id,
                 'images'           => [
-                        'http://localhost:8001/storage/products/64f9ef35-8f41-4d39-8a5d-5624f5dad4d3.jpg',
-                        'http://localhost:8001/storage/products/616ccbe1-8353-4ffc-98da-f9394e7bf983.jpg'
+                        '/storage/products/64f9ef35-8f41-4d39-8a5d-5624f5dad4d3.jpg',
+                        '/storage/products/616ccbe1-8353-4ffc-98da-f9394e7bf983.jpg'
                 ],
                 'is_featured'      => false,
                 'slug'             => 'formula-caeXj',
