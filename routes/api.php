@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\AdminOrderController;
 use App\Http\Controllers\Api\Admin\AdminProductController;
 use App\Http\Controllers\Api\Admin\AdminCategoryController;
+use App\Http\Controllers\Api\Admin\AdminReviewController;
 use App\Http\Controllers\Api\Admin\ImageUploadController;
 use App\Http\Controllers\Api\RecentlyViewedController;
 use App\Http\Controllers\Api\GoogleAuthController;
@@ -19,12 +20,12 @@ use App\Http\Controllers\Api\ProfileController;
 // ─── Public endpoints ──────────────────────────────────────────────────────────
 
 Route::prefix('auth')->group(function () {
-    Route::post('register', [AuthController::class, 'register']);
-    Route::post('login',    [AuthController::class, 'login']);
+    Route::post('register', [AuthController::class, 'register'])->middleware('throttle:10,1');
+    Route::post('login',    [AuthController::class, 'login'])->middleware('throttle:5,1');
     // Google OAuth — browser navigates to these directly (not XHR)
     Route::get('google/redirect',       [GoogleAuthController::class, 'redirect']);
     Route::get('google/callback',       [GoogleAuthController::class, 'callback']);
-    Route::post('google/token-login',   [GoogleAuthController::class, 'tokenLogin']);
+    Route::post('google/token-login',   [GoogleAuthController::class, 'tokenLogin'])->middleware('throttle:10,1');
 });
 
 Route::get('categories',              [CategoryController::class, 'index']);
@@ -103,5 +104,12 @@ Route::middleware('auth:sanctum')->group(function () {
         // Image upload
         Route::post('upload/image',   [ImageUploadController::class, 'store']);
         Route::delete('upload/image', [ImageUploadController::class, 'destroy']);
+
+        // Reviews moderation
+        Route::prefix('reviews')->group(function () {
+            Route::get('/',            [AdminReviewController::class, 'index']);
+            Route::patch('{id}/approve', [AdminReviewController::class, 'approve']);
+            Route::delete('{id}',      [AdminReviewController::class, 'destroy']);
+        });
     });
 });

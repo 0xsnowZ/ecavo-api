@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\SocialAccount;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Laravel\Sanctum\PersonalAccessToken;
 use Laravel\Socialite\Facades\Socialite;
 
 class GoogleAuthController extends Controller
@@ -30,8 +33,9 @@ class GoogleAuthController extends Controller
      *   1. Retrieve the Google user (state validated by Socialite)
      *   2. Find or create the local user (account linking by email)
      *   3. Upsert the social_accounts row
-     *   4. Issue a Sanctum token and set it as an HTTP-only cookie
-     *   5. Redirect the browser back to the frontend home page
+     *   4. Issue a Sanctum token
+     *   5. Store the token under a random One-Time Code (OTC) in cache (TTL 60s)
+     *   6. Redirect the browser to the frontend with only the OTC in the URL
      */
     public function callback()
     {
@@ -44,43 +48,33 @@ class GoogleAuthController extends Controller
 
         $user = DB::transaction(function () use ($googleUser) {
             // ── Account Linking ──────────────────────────────────────────────
-            // If we already have a social_accounts row, just load the user.
             $social = SocialAccount::where('provider', 'google')
                 ->where('provider_id', $googleUser->getId())
                 ->first();
 
             if ($social) {
-                // Keep the avatar up-to-date
                 $social->update(['avatar' => $googleUser->getAvatar()]);
-                
-                // Sync to user if they don't have a custom uploaded avatar
                 $user = $social->user;
-                if (!$user->avatar || \Illuminate\Support\Str::startsWith($user->avatar, 'http')) {
+                if (!$user->avatar || Str::startsWith($user->avatar, 'http')) {
                     $user->update(['avatar' => $googleUser->getAvatar()]);
                 }
-                
                 return $user;
             }
 
-            // Check whether a user with this email already exists (password-based account)
             $user = User::where('email', $googleUser->getEmail())->first();
 
             if (!$user) {
-                // New user — create the account (password is null → OAuth-only)
                 $user = User::create([
                     'name'   => $googleUser->getName(),
                     'email'  => $googleUser->getEmail(),
                     'avatar' => $googleUser->getAvatar(),
-                    // password stays null — nullable since our migration
                 ]);
             } else {
-                // Existing user — sync avatar if they don't have a custom one
-                if (!$user->avatar || \Illuminate\Support\Str::startsWith($user->avatar, 'http')) {
+                if (!$user->avatar || Str::startsWith($user->avatar, 'http')) {
                     $user->update(['avatar' => $googleUser->getAvatar()]);
                 }
             }
 
-            // Link this Google account to the user (works for both new & existing)
             SocialAccount::create([
                 'user_id'     => $user->id,
                 'provider'    => 'google',
@@ -91,50 +85,43 @@ class GoogleAuthController extends Controller
             return $user;
         });
 
-        // Rotate tokens: remove any old api-token, issue a fresh one
+        // Rotate tokens
         $user->tokens()->where('name', 'api-token')->delete();
         $token = $user->createToken('api-token')->plainTextToken;
 
-        // Build the HTTP-only cookie (reuses AuthController helper)
-        $authController = app(AuthController::class);
-        $cookie = cookie(
-            'access_token',
-            $token,
-            60 * 24 * 30,   // 30 days
-            '/',
-            null,
-            true,            // secure
-            true,            // httpOnly
-            false,
-            'None'           // sameSite
-        );
+        // ── OTC: store token server-side, only send a random code in the URL ──
+        // Prevents the Sanctum token from appearing in browser history, server
+        // access logs, or referrer headers.  TTL: 60 s — single use.
+        $otc = Str::random(64);
+        Cache::put('google_otc:' . $otc, $token, now()->addSeconds(60));
 
-        // Redirect browser to the frontend with the token in the URL.
-        // We do this because modern browsers block Third-Party cookies set during cross-site redirects.
-        return redirect(env('FRONTEND_URL', 'http://localhost:5173') . '/login?token=' . $token);
+        return redirect(env('FRONTEND_URL', 'http://localhost:5173') . '/login?otc=' . $otc);
     }
 
     /**
      * POST /api/auth/google/token-login
      *
-     * The frontend calls this endpoint via Axios with the token it received from the URL.
-     * Since this is an XHR request originating from the frontend (1st party context),
-     * the browser WILL accept the HTTP-Only cookie we return!
+     * Frontend sends the OTC received from the URL. We resolve the real Sanctum
+     * token from cache (Cache::pull → single-use, auto-deleted), then issue the
+     * HTTP-only cookie. The raw token is never exposed to browser JS.
      */
     public function tokenLogin(\Illuminate\Http\Request $request)
     {
-        $data = $request->validate(['token' => 'required|string']);
+        $data = $request->validate(['otc' => 'required|string|size:64']);
 
-        $token = \Laravel\Sanctum\PersonalAccessToken::findToken($data['token']);
+        // Cache::pull retrieves AND deletes atomically — true single use
+        $token = Cache::pull('google_otc:' . $data['otc']);
 
-        if (!$token || !$token->tokenable) {
-            return response()->json(['message' => 'Invalid or expired token'], 401);
+        if (!$token) {
+            return response()->json(['message' => 'رمز الدخول غير صالح أو منتهي الصلاحية.'], 401);
         }
 
-        $user = $token->tokenable;
+        $pat = PersonalAccessToken::findToken($token);
 
-        // Re-issue the HTTP-Only cookie natively using the AuthController logic
-        $authController = app(AuthController::class);
-        return $authController->respondWithToken($user, $data['token']);
+        if (!$pat || !$pat->tokenable) {
+            return response()->json(['message' => 'رمز الدخول غير صالح أو منتهي الصلاحية.'], 401);
+        }
+
+        return app(AuthController::class)->respondWithToken($pat->tokenable, $token);
     }
 }

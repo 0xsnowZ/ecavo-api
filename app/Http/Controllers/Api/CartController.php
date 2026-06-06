@@ -30,7 +30,7 @@ class CartController extends Controller
             return $price * $item->qty;
         });
 
-        $deliveryFee  = $subtotal > 0 ? 5.99 : 0;
+        $deliveryFee  = $subtotal > 0 ? (float) config('shop.delivery_fee', 5.99) : 0;
         $discount     = 0;
         $couponCode   = null;
 
@@ -111,7 +111,12 @@ class CartController extends Controller
     {
         $data = $request->validate(['qty' => 'required|integer|min:1|max:99']);
 
-        $item = $this->getCartQuery($request)->findOrFail($itemId);
+        $item = $this->getCartQuery($request)->with('product')->findOrFail($itemId);
+
+        if ($item->product->stock < $data['qty']) {
+            return response()->json(['message' => 'الكمية المطلوبة غير متوفرة في المخزون.'], 422);
+        }
+
         $item->update(['qty' => $data['qty']]);
 
         return response()->json($this->cartResponse($request));

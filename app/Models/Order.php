@@ -22,7 +22,7 @@ class Order extends Model
         'user_id', 'address_id', 'status',
         'subtotal', 'delivery_fee', 'discount', 'total',
         'coupon_code', 'notes',
-        'guest_name', 'guest_phone', 'guest_address',
+        'guest_name', 'guest_phone', 'guest_email', 'guest_address',
     ];
 
     protected $casts = [

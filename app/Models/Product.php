@@ -80,4 +80,18 @@ class Product extends Model
     {
         return $query->where('is_featured', true);
     }
-}
+
+    /**
+     * Auto-compute discount_percent from price / original_price when possible.
+     * Falls back to the stored column value for manually set discounts.
+     */
+    public function getDiscountPercentAttribute(): ?int
+    {
+        $stored = $this->attributes['discount_percent'] ?? null;
+
+        if ($this->original_price && (float) $this->original_price > (float) $this->price) {
+            return (int) round((1 - (float) $this->price / (float) $this->original_price) * 100);
+        }
+
+        return $stored !== null ? (int) $stored : null;
+    }

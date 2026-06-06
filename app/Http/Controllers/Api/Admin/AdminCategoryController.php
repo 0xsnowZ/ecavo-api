@@ -9,10 +9,19 @@ use Illuminate\Support\Str;
 
 class AdminCategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $query = Category::with('children')->whereNull('parent_id')->orderBy('sort_order');
+
+        $categories = $query->paginate($request->get('per_page', 50));
+
         return response()->json([
-            'data' => Category::with('children')->whereNull('parent_id')->orderBy('sort_order')->get(),
+            'data' => $categories->items(),
+            'meta' => [
+                'total'        => $categories->total(),
+                'current_page' => $categories->currentPage(),
+                'last_page'    => $categories->lastPage(),
+            ],
         ]);
     }
 

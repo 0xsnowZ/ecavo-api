@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\OrderStatusChanged;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class AdminOrderController extends Controller
 {
@@ -57,7 +59,15 @@ class AdminOrderController extends Controller
         ]);
 
         $order = Order::findOrFail($id);
+        $oldStatus = $order->status;
         $order->update(['status' => $data['status']]);
+
+        // Notify the customer (queued — non-blocking)
+        $recipientEmail = $order->guest_email
+            ?? $order->user?->email;
+        if ($recipientEmail) {
+            Mail::to($recipientEmail)->queue(new OrderStatusChanged($order, $oldStatus));
+        }
 
         return response()->json([
             'message' => 'تم تحديث حالة الطلب.',

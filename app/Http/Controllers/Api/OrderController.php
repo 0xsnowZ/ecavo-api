@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\OrderPlaced;
 use App\Models\CartItem;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class OrderController extends Controller
 {
@@ -18,6 +20,7 @@ class OrderController extends Controller
         $data = $request->validate([
             'name'        => 'required|string|max:255',
             'phone'       => 'required|string|max:20',
+            'email'       => 'nullable|email|max:255',
             'address'     => 'required|string',
             'city'        => 'required|string',
             'notes'       => 'nullable|string',
@@ -65,7 +68,7 @@ class OrderController extends Controller
             ($i->product->price + ($i->variant?->extra_price ?? 0)) * $i->qty
         );
 
-        $deliveryFee = 5.99;
+        $deliveryFee = (float) config('shop.delivery_fee', 5.99);
         $discount    = 0;
         $coupon      = null;
 
@@ -93,6 +96,7 @@ class OrderController extends Controller
                 'notes'         => $data['notes'] ?? null,
                 'guest_name'    => $data['name'],
                 'guest_phone'   => $data['phone'],
+                'guest_email'   => $data['email'] ?? $request->user()?->email,
                 'guest_address' => $data['address'] . ', ' . $data['city'],
             ]);
 
@@ -115,13 +119,23 @@ class OrderController extends Controller
             // Increment coupon usage
             $coupon?->increment('used_count');
 
-            // Clear DB cart if it was used
+            // Clear DB cart:
+            // - always when we used the DB cart directly
+            // - also when we used the frontend payload (auth user may still have DB cart items)
             if (empty($frontendItems)) {
                 $cartItems->each->delete();
+            } elseif ($request->user()) {
+                CartItem::where('user_id', $request->user()->id)->delete();
             }
 
             return $order->load('items');
         });
+
+        // Send order confirmation email (queued — non-blocking)
+        $recipientEmail = $order->guest_email;
+        if ($recipientEmail) {
+            Mail::to($recipientEmail)->queue(new OrderPlaced($order));
+        }
 
         return response()->json([
             'message' => 'Order placed successfully.',
