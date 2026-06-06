@@ -95,3 +95,4 @@ class Product extends Model
 
         return $stored !== null ? (int) $stored : null;
     }
+}
