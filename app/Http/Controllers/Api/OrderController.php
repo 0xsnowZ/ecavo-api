@@ -8,6 +8,8 @@ use App\Models\CartItem;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -39,9 +41,9 @@ class OrderController extends Controller
         if (!empty($frontendItems)) {
             // Build cart from frontend payload
             $cartItems = collect($frontendItems)->map(function ($item) {
-                $product = \App\Models\Product::find($item['product_id']);
+                $product = Product::find($item['product_id']);
                 $variant = isset($item['variant_id'])
-                    ? \App\Models\ProductVariant::find($item['variant_id'])
+                    ? ProductVariant::find($item['variant_id'])
                     : null;
                 return (object)[
                     'product'    => $product,
