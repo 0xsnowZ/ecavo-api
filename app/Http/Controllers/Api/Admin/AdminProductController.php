@@ -12,7 +12,7 @@ class AdminProductController extends Controller
     /** GET /api/admin/products */
     public function index(Request $request)
     {
-        $query = Product::with('category');
+        $query = Product::with(['category', 'variants']);
 
         if ($search = $request->get('search')) {
             $query->where('name_ar', 'like', "%{$search}%")
@@ -49,14 +49,25 @@ class AdminProductController extends Controller
             'specifications'   => 'nullable|array',
             'is_featured'      => 'boolean',
             'deal_ends_at'     => 'nullable|date',
+            'variants'         => 'nullable|array',
+            'variants.*.attribute' => 'required|string',
+            'variants.*.value'     => 'required|string',
+            'variants.*.extra_price'=> 'nullable|numeric|min:0',
+            'variants.*.stock'     => 'nullable|integer|min:0',
         ]);
 
         $data['slug'] = Str::slug($data['name_en']) . '-' . Str::random(5);
         $product = Product::create($data);
 
+        if (!empty($data['variants'])) {
+            foreach ($data['variants'] as $v) {
+                $product->variants()->create($v);
+            }
+        }
+
         return response()->json([
             'message' => 'تم إضافة المنتج بنجاح.',
-            'data'    => $product->load('category'),
+            'data'    => $product->load('category', 'variants'),
         ], 201);
     }
 
@@ -82,13 +93,25 @@ class AdminProductController extends Controller
             'is_active'        => 'boolean',
             'is_featured'      => 'boolean',
             'deal_ends_at'     => 'nullable|date',
+            'variants'         => 'nullable|array',
+            'variants.*.attribute' => 'required|string',
+            'variants.*.value'     => 'required|string',
+            'variants.*.extra_price'=> 'nullable|numeric|min:0',
+            'variants.*.stock'     => 'nullable|integer|min:0',
         ]);
 
         $product->update($data);
 
+        if (isset($data['variants'])) {
+            $product->variants()->delete();
+            foreach ($data['variants'] as $v) {
+                $product->variants()->create($v);
+            }
+        }
+
         return response()->json([
             'message' => 'تم تحديث المنتج بنجاح.',
-            'data'    => $product->fresh('category'),
+            'data'    => $product->fresh(['category', 'variants']),
         ]);
     }
 

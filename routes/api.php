@@ -16,12 +16,19 @@ use App\Http\Controllers\Api\Admin\ImageUploadController;
 use App\Http\Controllers\Api\RecentlyViewedController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\BannerController;
+use App\Http\Controllers\Api\Admin\AdminBannerController;
+use App\Http\Controllers\Api\Admin\AdminCouponController;
+use App\Http\Controllers\Api\Admin\AdminNotificationController;
 
 // ─── Public endpoints ──────────────────────────────────────────────────────────
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register'])->middleware('throttle:10,1');
     Route::post('login',    [AuthController::class, 'login'])->middleware('throttle:5,1');
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,1');
+    Route::post('reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:3,1');
+    
     // Google OAuth — browser navigates to these directly (not XHR)
     Route::get('google/redirect',       [GoogleAuthController::class, 'redirect']);
     Route::get('google/callback',       [GoogleAuthController::class, 'callback']);
@@ -37,6 +44,9 @@ Route::get('products/{slug}', [ProductController::class, 'show']);
 
 // Recently viewed — public GET (guest: pass ?ids=1,2,3 from localStorage)
 Route::get('recently-viewed', [RecentlyViewedController::class, 'index']);
+
+// Banners - public GET
+Route::get('banners', [BannerController::class, 'index']);
 
 // Cart (guest + auth)
 Route::prefix('cart')->group(function () {
@@ -57,10 +67,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Orders
     Route::prefix('orders')->group(function () {
-        Route::post('checkout',   [OrderController::class, 'checkout']);
-        Route::get('/',           [OrderController::class, 'index']);
-        Route::get('{id}',        [OrderController::class, 'show']);
-        Route::get('{id}/track',  [OrderController::class, 'track']);
+        Route::post('checkout',               [OrderController::class, 'checkout']);
+        Route::post('create-payment-intent',  [OrderController::class, 'createPaymentIntent']);
+        Route::get('/',                       [OrderController::class, 'index']);
+        Route::get('{id}',                    [OrderController::class, 'show']);
+        Route::get('{id}/track',              [OrderController::class, 'track']);
     });
 
     // Wishlist
@@ -111,5 +122,18 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::patch('{id}/approve', [AdminReviewController::class, 'approve']);
             Route::delete('{id}',      [AdminReviewController::class, 'destroy']);
         });
+
+        // Banners
+        Route::get('/banners/image', [AdminBannerController::class, 'getImage']);
+        Route::apiResource('banners', AdminBannerController::class);
+        Route::patch('/banners/{banner}/toggle-active', [AdminBannerController::class, 'toggleActive']);
+
+        // Coupons
+        Route::apiResource('coupons', AdminCouponController::class);
+        Route::patch('/coupons/{coupon}/toggle-active', [AdminCouponController::class, 'toggleActive']);
+
+        // Notifications
+        Route::get('notifications', [AdminNotificationController::class, 'index']);
+        Route::patch('notifications/{id}/read', [AdminNotificationController::class, 'markAsRead']);
     });
 });

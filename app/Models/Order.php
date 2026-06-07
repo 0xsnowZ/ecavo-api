@@ -19,7 +19,7 @@ class Order extends Model
     ];
 
     protected $fillable = [
-        'user_id', 'address_id', 'status',
+        'user_id', 'address_id', 'status', 'payment_method', 'payment_id',
         'subtotal', 'delivery_fee', 'discount', 'total',
         'coupon_code', 'notes',
         'guest_name', 'guest_phone', 'guest_email', 'guest_address',

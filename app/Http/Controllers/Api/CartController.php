@@ -136,9 +136,20 @@ class CartController extends Controller
         $coupon = Coupon::where('code', strtoupper($data['code']))->first();
 
         if (! $coupon || ! $coupon->isValid()) {
-            return response()->json(['message' => 'كود الخصم غير صالح أو منتهي الصلاحية.'], 422);
+            return response()->json([
+                'message' => 'كود الخصم غير صالح أو منتهي الصلاحية.',
+            ], 422);
         }
 
-        return response()->json($this->cartResponse($request, $coupon));
+        // Return coupon details — the frontend calculates the discount
+        // locally from its localStorage cart (no server-side session needed).
+        return response()->json([
+            'coupon_code'   => $coupon->code,
+            'discount_type' => $coupon->discount_type,   // 'percent' | 'fixed'
+            'value'         => (float) $coupon->value,
+            'min_order'     => (float) $coupon->min_order_amount,
+            // Legacy field: frontend uses data.discount to store the raw value
+            'discount'      => (float) $coupon->value,
+        ]);
     }
 }

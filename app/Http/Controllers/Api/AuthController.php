@@ -7,6 +7,10 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ResetPasswordMail;
 
 class AuthController extends Controller
 {
@@ -57,6 +61,56 @@ class AuthController extends Controller
         return response()
             ->json(['message' => 'تم تسجيل الخروج بنجاح.'])
             ->withoutCookie('access_token');
+    }
+
+    /** POST /api/auth/forgot-password */
+    public function forgotPassword(Request $request)
+    {
+        $request->validate(['email' => 'required|email|exists:users,email']);
+
+        $token = Str::random(60);
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $request->email],
+            [
+                'email' => $request->email,
+                'token' => Hash::make($token),
+                'created_at' => now()
+            ]
+        );
+
+        $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+        $resetUrl = $frontendUrl . '/reset-password?token=' . $token . '&email=' . urlencode($request->email);
+
+        Mail::to($request->email)->send(new ResetPasswordMail($resetUrl));
+
+        return response()->json(['message' => 'لقد قمنا بإرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.']);
+    }
+
+    /** POST /api/auth/reset-password */
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'token' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $record = DB::table('password_reset_tokens')->where('email', $request->email)->first();
+
+        if (!$record || !Hash::check($request->token, $record->token)) {
+            throw ValidationException::withMessages([
+                'email' => ['رابط إعادة تعيين كلمة المرور غير صالح أو منتهي الصلاحية.'],
+            ]);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        return response()->json(['message' => 'تم إعادة تعيين كلمة المرور بنجاح.']);
     }
 
     /** GET /api/auth/me */
