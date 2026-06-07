@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\Admin\AdminBannerController;
 use App\Http\Controllers\Api\Admin\AdminCouponController;
 use App\Http\Controllers\Api\Admin\AdminNotificationController;
+use App\Http\Controllers\Api\ReviewController;
 
 // ─── Public endpoints ──────────────────────────────────────────────────────────
 
@@ -82,6 +83,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Recently viewed — auth routes
     Route::post('recently-viewed/{product_id}', [RecentlyViewedController::class, 'track']);
+
+    // Reviews (customer-facing)
+    Route::prefix('reviews')->group(function () {
+        Route::get('eligible', [ReviewController::class, 'eligible']);
+        Route::post('/',       [ReviewController::class, 'store']);
+    });
 
     // ─── Admin (auth + admin role) ────────────────────────────────────────────
 

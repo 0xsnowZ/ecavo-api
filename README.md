@@ -24,14 +24,16 @@
 ## ✨ Features
 
 - 🔐 **Auth** — Register, Login, Logout via Sanctum Bearer tokens
-- 🛍️ **Products** — Full CRUD with bilingual names (AR/EN), images (JSON array), variants, specs, deals
-- 📂 **Categories** — Hierarchical parent/child structure, bilingual
+- 🛒 **Products** — Full CRUD with bilingual names (AR/EN/FR), images (JSON array), variants, specs, deals
+- 📂 **Categories** — Hierarchical parent/child structure, bilingual, `sort_order` for display sequencing
 - 🛒 **Cart** — Session + auth cart, coupon support, delivery fee calculation
 - 📦 **Orders** — Checkout, 11-status lifecycle, order tracking timeline
 - ❤️ **Wishlist** — Toggle wishlist per user
 - 🖼️ **Image Upload** — Multipart file upload to local storage, UUID filenames
-- 🧑‍💼 **Admin Panel** — Dashboard stats, full CRUD on orders/products/categories, status management
-- 🎟️ **Coupons** — Percent & fixed discount, usage limits, expiry, minimum order amount
+- 🧑‍💼 **Admin Panel** — Dashboard stats, full CRUD on orders/products/categories/reviews/banners, status management
+- 🏟️ **Coupons** — Percent & fixed discount, usage limits, expiry, minimum order amount
+- ⭐ **Reviews** — Customer product reviews with approval moderation workflow
+- 🎠 **Banners** — Hero slider banner management with active/inactive toggle
 - 💾 **MySQL 8** — Production-ready relational database with utf8mb4
 
 ---
@@ -244,6 +246,22 @@ API is available at: **http://localhost:8001/api**
 | `POST` | `/api/admin/upload/image` | Upload image (multipart/form-data, field: `image`) |
 | `DELETE` | `/api/admin/upload/image` | Delete image `{path: "products/uuid.jpg"}` |
 
+#### Reviews Moderation
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/admin/reviews` | List all reviews (search, filter by approved, paginate) |
+| `PATCH` | `/api/admin/reviews/{id}/approve` | Approve a review |
+| `DELETE` | `/api/admin/reviews/{id}` | Delete a review |
+
+#### Banners Management
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/admin/banners` | List all banners |
+| `POST` | `/api/admin/banners` | Create banner (image, order, is_active) |
+| `PUT` | `/api/admin/banners/{id}` | Update banner |
+| `DELETE` | `/api/admin/banners/{id}` | Delete banner |
+| `PATCH` | `/api/admin/banners/{id}/toggle` | Toggle active status |
+
 ---
 
 ## 🔐 Authentication Flow
@@ -270,13 +288,15 @@ Accept: application/json
 |---|---|
 | `users` | Customers and admins (role field) |
 | `personal_access_tokens` | Sanctum Bearer tokens |
-| `categories` | Bilingual categories (parent/child) |
+| `categories` | Bilingual categories (parent/child, sort_order) |
 | `products` | Bilingual with images JSON, specs JSON, soft deletes |
 | `product_variants` | Size, color, extra price per product |
 | `carts` / `cart_items` | Session-based cart |
 | `orders` / `order_items` | Order lifecycle (11 statuses) |
 | `wishlists` | User ↔ Product pivot |
 | `coupons` | Percent/fixed discounts with limits |
+| `reviews` | Customer product reviews (approved boolean) |
+| `banners` | Hero slider images (sort_order, is_active) |
 
 ---
 
