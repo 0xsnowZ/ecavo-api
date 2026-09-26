@@ -136,8 +136,13 @@
 
   {{-- ── Header ── --}}
   <div class="header">
-    <div style="display:inline-block; vertical-align:middle; background:#ffffff; border-radius:10px; padding:10px 22px 10px 18px; line-height:1;">
-      <span style="font-family:Arial Black,Arial,sans-serif; font-weight:900; font-size:30px; color:#1D3557; letter-spacing:-1px;">E</span><span style="font-family:Arial Black,Arial,sans-serif; font-weight:900; font-size:30px; color:#E63946; letter-spacing:-1px;">CAVO</span>
+    <div style="display:inline-flex; align-items:center; vertical-align:middle; background:#ffffff; border-radius:12px; padding:8px 20px; line-height:1; box-shadow:0 2px 10px rgba(0,0,0,0.15);">
+      <svg width="28" height="28" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right:8px; vertical-align:middle;">
+        <path d="M17 16V11C17 7.134 20.134 4 24 4C27.866 4 31 7.134 31 11V16" stroke="#1D3557" stroke-width="3.5" stroke-linecap="round"/>
+        <rect x="7" y="15" width="34" height="28" rx="8" fill="#E63946"/>
+        <path d="M18 24H30M18 29H27M18 34H30" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span style="font-family:Arial Black,Arial,sans-serif; font-weight:900; font-size:26px; color:#1D3557; letter-spacing:-1px;">E</span><span style="font-family:Arial Black,Arial,sans-serif; font-weight:900; font-size:26px; color:#E63946; letter-spacing:-1px;">CAVO</span>
     </div>
     <div class="badge">✓ Order Confirmed</div>
   </div>
