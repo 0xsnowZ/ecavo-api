@@ -43,13 +43,16 @@ class ImageUploadController extends Controller
     {
         $request->validate(['path' => 'required|string']);
 
-        // Safety: only allow deletion inside products/ folder
         $path = $request->input('path');
-        if (! Str::startsWith($path, 'products/')) {
-            return response()->json(['message' => 'غير مسموح.'], 403);
+        // Prevent path traversal by isolating the base filename
+        $filename = basename($path);
+        $cleanPath = 'products/' . $filename;
+
+        if (! Storage::disk('public')->exists($cleanPath)) {
+            return response()->json(['message' => 'الملف غير موجود.'], 404);
         }
 
-        Storage::disk('public')->delete($path);
+        Storage::disk('public')->delete($cleanPath);
 
         return response()->json(['message' => 'تم حذف الصورة.']);
     }

@@ -21,7 +21,7 @@ class AdminNotificationController extends Controller
         $admin = $request->user();
         
         if ($id === 'all') {
-            $admin->notifications()->delete();
+            $admin->unreadNotifications->markAsRead();
         } else {
             $notification = $admin->notifications()->where('id', $id)->first();
             if ($notification) {

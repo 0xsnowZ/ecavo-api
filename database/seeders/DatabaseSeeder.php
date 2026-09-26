@@ -126,5 +126,8 @@ class DatabaseSeeder extends Seeder
 
         // Attach Rich Data (Descriptions, Specs, Reviews) to the new dynamic products
         $this->call(ProductRichDataSeeder::class);
+
+        // Seed 7-day orders and realistic revenue trends for Admin Dashboard
+        $this->call(OrderStatisticsSeeder::class);
     }
 }

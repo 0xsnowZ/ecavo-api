@@ -21,8 +21,11 @@ use App\Http\Controllers\Api\Admin\AdminBannerController;
 use App\Http\Controllers\Api\Admin\AdminCouponController;
 use App\Http\Controllers\Api\Admin\AdminNotificationController;
 use App\Http\Controllers\Api\ReviewController;
+use App\Http\Controllers\Api\StripeWebhookController;
 
 // ─── Public endpoints ──────────────────────────────────────────────────────────
+
+Route::post('webhook/stripe', [StripeWebhookController::class, 'handle']);
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register'])->middleware('throttle:10,1');

@@ -86,22 +86,7 @@ class OrderController extends Controller
             return response()->json(['message' => 'Your cart is empty.'], 422);
         }
 
-        $paymentMethod = $data['payment_method'] ?? 'cod';
-        
-        // Verify Stripe Payment
-        if ($paymentMethod === 'stripe') {
-            \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
-            try {
-                $intent = \Stripe\PaymentIntent::retrieve($data['payment_intent_id']);
-                if ($intent->status !== 'succeeded') {
-                    return response()->json(['message' => 'Payment not successful.'], 400);
-                }
-            } catch (\Exception $e) {
-                return response()->json(['message' => 'Payment verification failed: ' . $e->getMessage()], 400);
-            }
-        }
-
-        // Calculate totals
+        // Calculate totals first so we can verify exact amount with Stripe
         $subtotal = $cartItems->sum(fn($i) =>
             ($i->product->price + $i->extra_price) * $i->qty
         );
@@ -119,62 +104,105 @@ class OrderController extends Controller
 
         $total = $subtotal + $deliveryFee - $discount;
 
-        $order = DB::transaction(function () use (
-            $request, $data, $cartItems, $subtotal, $deliveryFee, $discount, $total, $coupon, $frontendItems, $paymentMethod
-        ) {
-            $order = Order::create([
-                'user_id'       => $request->user()?->id,
-                'address_id'    => $data['address_id'] ?? null,
-                'status'        => 'placed',
-                'payment_method'=> $paymentMethod,
-                'payment_id'    => $data['payment_intent_id'] ?? null,
-                'subtotal'      => $subtotal,
-                'delivery_fee'  => $deliveryFee,
-                'discount'      => $discount,
-                'total'         => $total,
-                'coupon_code'   => $coupon?->code,
-                'notes'         => $data['notes'] ?? null,
-                'guest_name'    => $data['name'],
-                'guest_phone'   => $data['phone'],
-                'guest_email'   => $data['email'] ?? $request->user()?->email,
-                'guest_address' => $data['address'] . ', ' . $data['city'],
-            ]);
+        $paymentMethod = $data['payment_method'] ?? 'cod';
+        
+        // Verify Stripe Payment
+        if ($paymentMethod === 'stripe') {
+            // Check if payment_intent_id has already been used for an order (prevent double spending / replay)
+            if (Order::where('payment_id', $data['payment_intent_id'])->exists()) {
+                return response()->json(['message' => 'This payment has already been associated with an order.'], 422);
+            }
 
-            foreach ($cartItems as $item) {
-                $unitPrice = $item->product->price + $item->extra_price;
-                $productName = $item->product->name_en ?? $item->product->name_ar;
-                if (!empty($item->variant_label)) {
-                    $productName .= ' (' . $item->variant_label . ')';
+            $stripeSecret = config('services.stripe.secret') ?: env('STRIPE_SECRET');
+            \Stripe\Stripe::setApiKey($stripeSecret);
+            try {
+                $intent = \Stripe\PaymentIntent::retrieve($data['payment_intent_id']);
+                if ($intent->status !== 'succeeded') {
+                    return response()->json(['message' => 'Payment not successful.'], 400);
                 }
 
-                OrderItem::create([
-                    'order_id'     => $order->id,
-                    'product_id'   => $item->product_id,
-                    'variant_id'   => null,
-                    'product_name' => $productName,
-                    'unit_price'   => $unitPrice,
-                    'qty'          => $item->qty,
-                    'total'        => $unitPrice * $item->qty,
+                // Verify charged amount matches the calculated order total
+                $expectedAmount = (int) round($total * 100);
+                if ((int) $intent->amount !== $expectedAmount) {
+                    return response()->json([
+                        'message' => 'Payment amount mismatch. Expected: ' . ($expectedAmount / 100) . ', Paid: ' . ($intent->amount / 100)
+                    ], 400);
+                }
+            } catch (\Exception $e) {
+                return response()->json(['message' => 'Payment verification failed: ' . $e->getMessage()], 400);
+            }
+        }
+
+        try {
+            $order = DB::transaction(function () use (
+                $request, $data, $cartItems, $subtotal, $deliveryFee, $discount, $total, $coupon, $frontendItems, $paymentMethod
+            ) {
+                // Verify and lock stock for each item before creating order
+                foreach ($cartItems as $item) {
+                    $product = Product::where('id', $item->product_id)->lockForUpdate()->first();
+                    if (!$product || $product->stock < $item->qty) {
+                        $name = $item->product->name_en ?? $item->product->name_ar;
+                        throw new \Exception("Product '{$name}' is out of stock or does not have sufficient quantity.");
+                    }
+                }
+
+                $order = Order::create([
+                    'user_id'       => $request->user()?->id,
+                    'address_id'    => $data['address_id'] ?? null,
+                    'status'        => 'placed',
+                    'payment_method'=> $paymentMethod,
+                    'payment_id'    => $data['payment_intent_id'] ?? null,
+                    'subtotal'      => $subtotal,
+                    'delivery_fee'  => $deliveryFee,
+                    'discount'      => $discount,
+                    'total'         => $total,
+                    'coupon_code'   => $coupon?->code,
+                    'notes'         => $data['notes'] ?? null,
+                    'guest_name'    => $data['name'],
+                    'guest_phone'   => $data['phone'],
+                    'guest_email'   => $data['email'] ?? $request->user()?->email,
+                    'guest_address' => $data['address'] . ', ' . $data['city'],
                 ]);
 
-                // Decrease stock
-                $item->product->decrement('stock', $item->qty);
-            }
+                foreach ($cartItems as $item) {
+                    $unitPrice = $item->product->price + $item->extra_price;
+                    $productName = $item->product->name_en ?? $item->product->name_ar;
+                    if (!empty($item->variant_label)) {
+                        $productName .= ' (' . $item->variant_label . ')';
+                    }
 
-            // Increment coupon usage
-            $coupon?->increment('used_count');
+                    OrderItem::create([
+                        'order_id'     => $order->id,
+                        'product_id'   => $item->product_id,
+                        'variant_id'   => null,
+                        'product_name' => $productName,
+                        'unit_price'   => $unitPrice,
+                        'qty'          => $item->qty,
+                        'total'        => $unitPrice * $item->qty,
+                    ]);
 
-            // Clear DB cart:
-            // - always when we used the DB cart directly
-            // - also when we used the frontend payload (auth user may still have DB cart items)
-            if (empty($frontendItems)) {
-                $cartItems->each->delete();
-            } elseif ($request->user()) {
-                CartItem::where('user_id', $request->user()->id)->delete();
-            }
+                    // Decrease locked stock
+                    $product = Product::where('id', $item->product_id)->lockForUpdate()->first();
+                    $product->decrement('stock', $item->qty);
+                }
 
-            return $order->load('items');
-        });
+                // Increment coupon usage
+                $coupon?->increment('used_count');
+
+                // Clear DB cart:
+                // - always when we used the DB cart directly
+                // - also when we used the frontend payload (auth user may still have DB cart items)
+                if (empty($frontendItems)) {
+                    $cartItems->each->delete();
+                } elseif ($request->user()) {
+                    CartItem::where('user_id', $request->user()->id)->delete();
+                }
+
+                return $order->load('items');
+            });
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
         // Send order confirmation email immediately
         $recipientEmail = $order->guest_email;
@@ -242,6 +270,16 @@ class OrderController extends Controller
             return response()->json(['message' => 'Your cart is empty.'], 422);
         }
 
+        // Check stock availability before initiating payment intent
+        foreach ($cartItems as $item) {
+            if ($item->product->stock < $item->qty) {
+                $name = $item->product->name_en ?? $item->product->name_ar;
+                return response()->json([
+                    'message' => "Product '{$name}' is out of stock or does not have sufficient quantity."
+                ], 422);
+            }
+        }
+
         $subtotal = $cartItems->sum(fn($i) =>
             ($i->product->price + $i->extra_price) * $i->qty
         );
@@ -258,7 +296,8 @@ class OrderController extends Controller
 
         $total = $subtotal + $deliveryFee - $discount;
 
-        \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+        $stripeSecret = config('services.stripe.secret') ?: env('STRIPE_SECRET');
+        \Stripe\Stripe::setApiKey($stripeSecret);
 
         try {
             $paymentIntent = \Stripe\PaymentIntent::create([
