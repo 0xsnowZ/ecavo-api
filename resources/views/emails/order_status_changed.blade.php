@@ -35,16 +35,8 @@
 
   {{-- Header --}}
   <div class="header">
-    <div style="display:inline-flex; align-items:center; vertical-align:middle; background:#ffffff; border-radius:12px; padding:8px 20px; line-height:1; box-shadow:0 2px 10px rgba(0,0,0,0.15);">
-      <svg width="28" height="28" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right:8px; vertical-align:middle;">
-        <path d="M17 17V10C17 6.134 20.134 3 24 3C27.866 3 31 6.134 31 10V17" stroke="#F4A261" stroke-width="3.5" stroke-linecap="round"/>
-        <rect x="6" y="15" width="36" height="30" rx="9" fill="#E63946"/>
-        <rect x="15" y="22" width="16" height="3.5" rx="1.75" fill="#FFFFFF"/>
-        <rect x="15" y="28" width="11" height="3.5" rx="1.75" fill="#FFFFFF"/>
-        <rect x="15" y="34" width="16" height="3.5" rx="1.75" fill="#FFFFFF"/>
-        <circle cx="34" cy="20" r="1.8" fill="#FFFFFF"/>
-      </svg>
-      <span style="font-family:Arial Black,Arial,sans-serif; font-weight:900; font-size:26px; color:#1D3557; letter-spacing:-1px;">E</span><span style="font-family:Arial Black,Arial,sans-serif; font-weight:900; font-size:26px; color:#E63946; letter-spacing:-1px;">CAVO</span>
+    <div style="display:inline-flex; align-items:center; vertical-align:middle; background:#ffffff; border-radius:12px; padding:10px 22px; line-height:1; box-shadow:0 2px 10px rgba(0,0,0,0.15);">
+      <span style="font-family:Arial Black,Arial,sans-serif; font-weight:900; font-size:26px; color:#1D3557; letter-spacing:-0.5px;">E</span><span style="font-family:Arial Black,Arial,sans-serif; font-weight:900; font-size:26px; color:#E63946; letter-spacing:-0.5px;">CAVO</span><span style="display:inline-block; width:7px; height:7px; background-color:#E63946; border-radius:50%; margin-left:5px; vertical-align:middle;"></span>
     </div>
     <div class="badge">📦 Order Status Update</div>
   </div>
